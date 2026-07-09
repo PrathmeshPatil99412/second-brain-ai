@@ -1,65 +1,38 @@
-# ==========================
-# Web Framework
-# ==========================
 fastapi
 uvicorn[standard]
 python-multipart
 
-# ==========================
 # Frontend
-# ==========================
 streamlit
 
-# ==========================
-# Environment Variables
-# ==========================
 python-dotenv
 
-# ==========================
-# Google Gemini
-# ==========================
+# API
 google-genai
 
-# ==========================
 # RAG
-# ==========================
 langchain
 langchain-community
 langchain-text-splitters
 
-# ==========================
-# Vector Database
-# ==========================
+# Vector DB
 chromadb
 
-# ==========================
 # Embeddings
-# ==========================
 sentence-transformers
 
-# ==========================
 # PDF Processing
-# ==========================
 pymupdf
 
-# ==========================
 # Database
-# ==========================
 sqlalchemy
 
-# ==========================
 # Data Processing
-# ==========================
 pandas
 numpy
 
-# ==========================
 # Visualization
-# ==========================
 plotly
 
-# ==========================
-# Utilities
-# ==========================
 tqdm
 requests
