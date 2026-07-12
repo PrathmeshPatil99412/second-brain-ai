@@ -36,3 +36,4 @@ plotly
 
 tqdm
 requests
+pydantic-settings
