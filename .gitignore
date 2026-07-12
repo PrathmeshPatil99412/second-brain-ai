@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment secrets
+.env
+
+# IDE
+.vscode/
+
+# Data
+data/chroma/
+data/sqlite/
+data/uploads/
