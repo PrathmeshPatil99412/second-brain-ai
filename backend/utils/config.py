@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # ===== AI Model =====
     gemini_api_key: str
-    gemini_chat_model: str = "gemini-2.5-flash"
+    gemini_chat_model: str = "gemini-3.5-flash"
 
     # ===== Project Data Directories =====
     # Keeping all paths relative to BASE_DIR makes the project portable.
