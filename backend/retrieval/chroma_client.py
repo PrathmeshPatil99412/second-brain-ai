@@ -1,4 +1,4 @@
-print("SCRIPT STARTED", flush=True)
+
 """
 ChromaDB client wrapper — persistent local vector store.
 
