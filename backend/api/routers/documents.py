@@ -2,14 +2,16 @@
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, File, UploadFile, status
-
+from fastapi import APIRouter, File, UploadFile, status, Depends
+from sqlalchemy.orm import Session
 from api.schemas import (
     DocumentDeleteResponse,
     DocumentDetailResponse,
     DocumentListResponse,
     DocumentUploadResponse,
 )
+from database.session import get_db
+from services.document_service import ingest_document
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -26,6 +28,7 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 )
 async def upload_document(
     file: UploadFile = File(..., description="Document file to ingest (e.g. PDF)."),
+    db: Session = Depends(get_db),
 ) -> DocumentUploadResponse:
     """
     Accept an uploaded file and register it for background ingestion.
@@ -33,15 +36,8 @@ async def upload_document(
     Implementation will delegate to the ingestion service for parsing,
     chunking, embedding, and persistence.
     """
-    # TODO: delegate to ingestion service
-    return DocumentUploadResponse(
-        id="00000000-0000-0000-0000-000000000000",
-        filename=file.filename or "unknown",
-        content_type=file.content_type,
-        size_bytes=None,
-        status="pending",
-        message="Upload accepted. Ingestion not yet implemented.",
-    )
+    result = ingest_document(db, file)
+    return DocumentUploadResponse(**result)
 
 
 @router.get(
@@ -93,7 +89,7 @@ async def get_document(document_id: str) -> DocumentDetailResponse:
         "from the system."
     ),
 )
-async def delete_document(document_id: str) -> DocumentDeleteResponse:
+async def delete_document(document_id: str) -> DocumentDeleteResponse: 
     """
     Delete a document and all derived artifacts.
 

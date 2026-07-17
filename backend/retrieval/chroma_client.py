@@ -61,7 +61,7 @@ def query_collection(query_embedding: list[float], top_k: int = 5) -> dict:
     """
     collection = get_collection()
     results = collection.query(query_embeddings=[query_embedding], n_results=top_k)
-    return results
+    return results 
 
 
 def count_all() -> int:
