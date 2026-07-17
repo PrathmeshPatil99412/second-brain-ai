@@ -1,8 +1,10 @@
 """RAG-backed conversational query routes."""
-
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from api.schemas import ChatQueryRequest, ChatQueryResponse
+from database.session import get_db
+from services.chat_service import run_chat_query
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -16,14 +18,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
         "The system retrieves relevant chunks and generates a grounded answer via Gemini."
     ),
 )
-async def chat_query(payload: ChatQueryRequest) -> ChatQueryResponse:
-    """
-    Run a retrieval-augmented chat query.
-
-    Implementation will retrieve context from ChromaDB and call the intelligence service.
-    """
-    # TODO: retrieval + Gemini generation
-    return ChatQueryResponse(
-        answer="Chat query handling is not yet implemented.",
-        sources=[],
-    )
+async def chat_query(payload: ChatQueryRequest, db: Session = Depends(get_db)) -> ChatQueryResponse:
+    history = [msg.model_dump() for msg in payload.chat_history] if payload.chat_history else None
+    result = run_chat_query(db, payload.query, history)
+    return ChatQueryResponse(**result)
