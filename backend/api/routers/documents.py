@@ -1,15 +1,14 @@
 """Document ingestion and management routes."""
-
-from datetime import UTC, datetime
-
-from fastapi import APIRouter, File, UploadFile, status, Depends
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
+
 from api.schemas import (
     DocumentDeleteResponse,
     DocumentDetailResponse,
     DocumentListResponse,
     DocumentUploadResponse,
 )
+from database import crud
 from database.session import get_db
 from services.document_service import ingest_document
 
@@ -30,12 +29,6 @@ async def upload_document(
     file: UploadFile = File(..., description="Document file to ingest (e.g. PDF)."),
     db: Session = Depends(get_db),
 ) -> DocumentUploadResponse:
-    """
-    Accept an uploaded file and register it for background ingestion.
-
-    Implementation will delegate to the ingestion service for parsing,
-    chunking, embedding, and persistence.
-    """
     result = ingest_document(db, file)
     return DocumentUploadResponse(**result)
 
@@ -46,14 +39,9 @@ async def upload_document(
     summary="List all documents",
     description="Return metadata summaries for every document tracked in the system.",
 )
-async def list_documents() -> DocumentListResponse:
-    """
-    List all tracked documents with lightweight metadata.
-
-    Implementation will query the document repository and return ordered results.
-    """
-    # TODO: fetch from document repository
-    return DocumentListResponse(documents=[], total=0)
+async def list_documents(db: Session = Depends(get_db)) -> DocumentListResponse:
+    docs = crud.list_documents(db)
+    return DocumentListResponse(documents=docs, total=len(docs))
 
 
 @router.get(
@@ -62,21 +50,21 @@ async def list_documents() -> DocumentListResponse:
     summary="Get document details",
     description="Fetch metadata, summary, and tags for a specific document by ID.",
 )
-async def get_document(document_id: str) -> DocumentDetailResponse:
-    """
-    Retrieve full metadata for a single document.
-
-    Implementation will load the document record, summary, and tags from storage.
-    """
-    # TODO: fetch document by ID; raise 404 if not found
+async def get_document(document_id: str, db: Session = Depends(get_db)) -> DocumentDetailResponse:
+    doc = crud.get_document(db, document_id)
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Document not found")
     return DocumentDetailResponse(
-        id=document_id,
-        filename="placeholder.pdf",
-        status="pending",
-        summary=None,
-        tags=[],
-        metadata={},
-        created_at=datetime.now(UTC),
+        id=doc.id,
+        filename=doc.filename,
+        content_type=doc.content_type,
+        size_bytes=doc.size_bytes,
+        status=doc.status,
+        summary=doc.summary,
+        tags=doc.tags,
+        metadata=doc.doc_metadata,
+        created_at=doc.created_at,
+        updated_at=doc.updated_at,
     )
 
 
@@ -89,15 +77,8 @@ async def get_document(document_id: str) -> DocumentDetailResponse:
         "from the system."
     ),
 )
-async def delete_document(document_id: str) -> DocumentDeleteResponse: 
-    """
-    Delete a document and all derived artifacts.
-
-    Implementation will remove files, vector entries, and database records atomically.
-    """
-    # TODO: delete from storage, vector DB, and SQLite
-    return DocumentDeleteResponse(
-        id=document_id,
-        deleted=False,
-        message="Deletion not yet implemented.",
-    )
+async def delete_document(document_id: str, db: Session = Depends(get_db)) -> DocumentDeleteResponse:
+    deleted = crud.delete_document(db, document_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return DocumentDeleteResponse(id=document_id, deleted=True, message="Document deleted.")

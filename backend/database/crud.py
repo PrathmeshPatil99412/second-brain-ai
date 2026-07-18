@@ -177,3 +177,7 @@ def count_documents_by_status(db: Session) -> dict[str, int]:
     """Return {'pending': 2, 'ready': 5, ...} — used directly by DashboardResponse.documents_by_status."""
     rows = db.query(Document.status, func.count(Document.id)).group_by(Document.status).all()
     return {status: count for status, count in rows}
+
+def count_documents(db: Session) -> int:
+    """Total document count — used by the dashboard."""
+    return db.query(func.count(Document.id)).scalar() or 0
