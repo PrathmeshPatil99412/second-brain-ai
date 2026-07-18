@@ -84,17 +84,13 @@ class Chunk(Base):
     __tablename__ = "chunks"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
-
-    # ForeignKey links this row to a specific Document row (documents.id)
-    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), nullable=False)
-
-    # position of this chunk within the original document (0, 1, 2, ...)
+    document_id: Mapped[str | None] = mapped_column(ForeignKey("documents.id"), nullable=True)
+    note_id: Mapped[str | None] = mapped_column(ForeignKey("notes.id"), nullable=True)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
-
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
-    # the "reverse" side of Document.chunks — lets you do chunk.document to get parent
-    document: Mapped["Document"] = relationship(back_populates="chunks")
+    document: Mapped["Document | None"] = relationship(back_populates="chunks")
+    note: Mapped["Note | None"] = relationship(back_populates="chunks")
 
 
 class Note(Base):
@@ -107,7 +103,7 @@ class Note(Base):
     folder: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(String, default="pending")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
-
+    chunks: Mapped[list["Chunk"]] = relationship(back_populates="note", cascade="all, delete-orphan")
 
 class ChatHistory(Base):
     """

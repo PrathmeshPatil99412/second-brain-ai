@@ -102,15 +102,18 @@ def delete_document(db: Session, document_id: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def create_chunks(db: Session, document_id: str, texts: list[str]) -> list[Chunk]:
+def create_chunks(db: Session, texts: list[str], document_id: str | None = None, note_id: str | None = None) -> list[Chunk]:
     """
     Bulk-insert chunk rows for a document, in order.
     `texts` is the list of chunk strings produced by chunker.py.
     The chunk_index preserves original order so citations can reference
     'chunk 3 of document X' meaningfully.
     """
+    if document_id and note_id:
+        raise ValueError("Chunk must belong to either a document or a note, not both")
+
     chunks = [
-        Chunk(document_id=document_id, chunk_index=i, content=text)
+        Chunk(document_id=document_id, note_id=note_id, chunk_index=i, content=text)
         for i, text in enumerate(texts)
     ]
     db.add_all(chunks)

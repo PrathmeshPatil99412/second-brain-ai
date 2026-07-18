@@ -1,8 +1,12 @@
 """Note creation routes."""
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+
 
 from api.schemas import NoteCreateRequest, NoteCreateResponse
+from database.session import get_db
+from services.notes_service import ingest_note
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 
@@ -17,17 +21,12 @@ router = APIRouter(prefix="/notes", tags=["Notes"])
         "The note will be chunked, embedded, and indexed like uploaded documents."
     ),
 )
-async def create_note(payload: NoteCreateRequest) -> NoteCreateResponse:
-    """
-    Create and ingest a new text note.
-
-    Implementation will persist the note and enqueue indexing via the ingestion pipeline.
-    """
-    # TODO: persist note and enqueue ingestion
+async def create_note(payload: NoteCreateRequest, db: Session = Depends(get_db)) -> NoteCreateResponse:
+    result = ingest_note(db, payload.title, payload.content, payload.folder)
     return NoteCreateResponse(
-        id="00000000-0000-0000-0000-000000000000",
-        title=payload.title,
-        folder=payload.folder,
-        status="pending",
-        message="Note accepted. Ingestion not yet implemented.",
+        id=result["id"],
+        title=result["title"],
+        folder=result["folder"],
+        status=result["status"],
+        message=result["message"],
     )
