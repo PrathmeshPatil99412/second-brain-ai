@@ -22,6 +22,27 @@ Upload PDFs or notes, search semantically, chat with your knowledge, generate su
 
 ## 🏗️ System Architecture
 
+To understand the core mechanics of the **Second Brain AI** platform, review the architecture and data flow diagrams detailed below:
+
+### 🌐 High-Level System Architecture
+The overall architecture maps the interaction between the Streamlit UI frontend, the FastAPI backend ecosystem, and the underlying storage engines (SQLite & ChromaDB).
+
+![System Architecture](assets/SecondBrain-Asset-Architecture.png)
+
+---
+
+### 📥 Ingestion Pipeline
+The ingestion framework handles document parsing, chunking strategy via LangChain, embedding generation, and simultaneous population of relational metadata and vector storage.
+
+![Asset Ingestion Pipeline](assets/SecondBrain-Asset-InjestionPipeline-V2.png)
+
+---
+
+### 🔍 Retrieval Pipeline
+The query processing and RAG execution flow—spanning semantic vector search, context synthesis, prompt formatting, and final response generation using Google Gemini.
+
+![Asset Retrieval Pipeline](assets/SecondBrain-Asset-RetrivalPipeline.png)
+
 
 
 ## ⚙️ Tech Stack
